@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MCQ Quiz - 6 Sets</title>
+<title>MCQ Quiz - 6 Sets with Tracker</title>
 <style>
 body {font-family:Arial,sans-serif;background:#f0f2f5;padding:20px; display:flex; justify-content:center;}
-.quiz-container {width:90%; max-width:900px; background:white; border-radius:20px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+.main-container {display:flex; gap:20px; width:100%; max-width:1400px;}
+.quiz-container {flex:2; background:white; border-radius:20px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+.tracker-container {flex:1; background:white; border-radius:20px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1); max-height:80vh; overflow-y:auto;}
 .tabs {display:flex; border-bottom:2px solid #ccc; margin-bottom:20px;}
 .tab {flex:1; text-align:center; padding:10px; cursor:pointer; background:#e0e0e0; border-radius:10px 10px 0 0; margin-right:2px; transition:all 0.3s;}
 .tab:last-child{margin-right:0;}
@@ -25,31 +27,103 @@ body {font-family:Arial,sans-serif;background:#f0f2f5;padding:20px; display:flex
 .btn {padding:8px 15px; border:none; border-radius:20px; cursor:pointer; font-weight:bold;}
 .btn-primary {background:#667eea;color:white;}
 .btn-primary:disabled {opacity:0.5; cursor:not-allowed;}
+.btn-success {background:#28a745;color:white;}
+.btn-danger {background:#dc3545;color:white;}
 .results-container {display:none; text-align:center; margin-top:20px;}
 .score-display {font-size:1.5em; font-weight:bold;}
 .score-breakdown {display:flex; justify-content:space-around; margin-top:10px;}
 .score-item{text-align:center;}
 .score-value{font-size:1.2em; color:#667eea;}
+
+/* Tracker Styles */
+.tracker-header {text-align:center; margin-bottom:20px;}
+.tracker-header h3 {color:#667eea; margin:0;}
+.stats-container {display:flex; justify-content:space-between; margin:15px 0; padding:10px; background:#f8f9fa; border-radius:10px;}
+.stat-item {text-align:center;}
+.stat-number {font-size:1.5em; font-weight:bold;}
+.stat-attempted {color:#28a745;}
+.stat-not-attempted {color:#dc3545;}
+.stat-total {color:#667eea;}
+.question-grid {display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin:20px 0;}
+.question-box {padding:10px; text-align:center; border-radius:8px; cursor:pointer; font-weight:bold; transition:all 0.3s;}
+.question-box.attempted {background:#28a745; color:white;}
+.question-box.not-attempted {background:#dc3545; color:white;}
+.question-box.current {border:3px solid #ffd700; transform:scale(1.1);}
+.question-box:hover {transform:scale(1.05); box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+.tracker-controls {margin-top:20px;}
+.tracker-controls .btn {width:100%; margin-bottom:10px;}
+.legend {margin:15px 0;}
+.legend-item {display:flex; align-items:center; margin:5px 0;}
+.legend-color {width:15px; height:15px; border-radius:3px; margin-right:10px;}
+.legend-attempted {background:#28a745;}
+.legend-not-attempted {background:#dc3545;}
+
+@media (max-width: 1200px) {
+  .main-container {flex-direction:column;}
+  .tracker-container {max-height:none;}
+}
 </style>
 </head>
 <body>
-<div class="quiz-container">
-    <div class="tabs">
-        <div class="tab active" data-set="0">Set 1</div>
-        <div class="tab" data-set="1">Set 2</div>
-        <div class="tab" data-set="2">Set 3</div>
-        <div class="tab" data-set="3">Set 4</div>
-        <div class="tab" data-set="4">Set 5</div>
-        <div class="tab" data-set="5">Set 6</div>
+<div class="main-container">
+    <div class="quiz-container">
+        <div class="tabs">
+            <div class="tab active" data-set="0">Set 1</div>
+            <div class="tab" data-set="1">Set 2</div>
+            <div class="tab" data-set="2">Set 3</div>
+            <div class="tab" data-set="3">Set 4</div>
+            <div class="tab" data-set="4">Set 5</div>
+            <div class="tab" data-set="5">Set 6</div>
+        </div>
+
+        <div id="tabContents">
+            <!-- Six tab contents will be generated via JS -->
+        </div>
     </div>
 
-    <div id="tabContents">
-        <!-- Six tab contents will be generated via JS -->
+    <div class="tracker-container">
+        <div class="tracker-header">
+            <h3>Question Tracker</h3>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number stat-attempted" id="attemptedCount">0</div>
+                    <div>Attempted</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number stat-not-attempted" id="notAttemptedCount">10</div>
+                    <div>Not Attempted</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number stat-total" id="totalCount">10</div>
+                    <div>Total</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-attempted"></div>
+                <span>Attempted Questions</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-not-attempted"></div>
+                <span>Not Attempted Questions</span>
+            </div>
+        </div>
+
+        <div class="question-grid" id="questionGrid">
+            <!-- Question boxes will be generated here -->
+        </div>
+
+        <div class="tracker-controls">
+            <button class="btn btn-success" onclick="selectRandomQuestion()">Random Question</button>
+            <button class="btn btn-danger" onclick="selectRandomNotAttempted()">Random Not Attempted</button>
+        </div>
     </div>
 </div>
 
 <script>
-// Quiz data (example for first set only, add all 6 sets like previous example)
+// Quiz data
 const quizSets = [
     [ /* Set 1 */
         {question:"Which of the following is true about 1NF?", options:["No partial dependency","No multi-valued attributes","No transitive dependency","Every determinant is a candidate key"], correct:1},
@@ -127,11 +201,13 @@ const quizSets = [
     {question:"Which of the following keys is minimal?", options:["Super Key","Candidate Key","Primary Key","Both b and c"], correct:3},
     {question:"If a primary key is made of two attributes, it is called:", options:["Composite Key","Candidate Key","Foreign Key","Super Key"], correct:0}
     ]
-     // Fill remaining sets similarly
 ];
 
 let currentSet = 0;
 const tabContentsDiv = document.getElementById('tabContents');
+
+// Track question attempts across all sets
+let questionAttempts = Array(quizSets.length).fill().map(()=>Array(10).fill(false));
 
 // Generate tab content for each set
 quizSets.forEach((set, setIndex)=>{
@@ -167,6 +243,72 @@ quizSets.forEach((set, setIndex)=>{
 let questionIndices = Array(quizSets.length).fill(0);
 let userAnswers = Array(quizSets.length).fill().map(()=>Array(10).fill(null));
 
+// Initialize tracker
+function initializeTracker() {
+    const grid = document.getElementById('questionGrid');
+    grid.innerHTML = '';
+    for(let i = 0; i < 10; i++) {
+        const box = document.createElement('div');
+        box.className = 'question-box not-attempted';
+        box.textContent = i + 1;
+        box.onclick = () => jumpToQuestion(i);
+        grid.appendChild(box);
+    }
+    updateTracker();
+}
+
+// Update tracker display
+function updateTracker() {
+    const attempted = questionAttempts[currentSet].filter(Boolean).length;
+    const notAttempted = 10 - attempted;
+    
+    document.getElementById('attemptedCount').textContent = attempted;
+    document.getElementById('notAttemptedCount').textContent = notAttempted;
+    document.getElementById('totalCount').textContent = '10';
+    
+    const boxes = document.querySelectorAll('.question-box');
+    boxes.forEach((box, index) => {
+        box.className = 'question-box';
+        if(questionAttempts[currentSet][index]) {
+            box.classList.add('attempted');
+        } else {
+            box.classList.add('not-attempted');
+        }
+        if(index === questionIndices[currentSet]) {
+            box.classList.add('current');
+        }
+    });
+}
+
+// Jump to specific question
+function jumpToQuestion(questionIndex) {
+    questionIndices[currentSet] = questionIndex;
+    loadQuestion(currentSet);
+    updateTracker();
+}
+
+// Select random question
+function selectRandomQuestion() {
+    const randomIndex = Math.floor(Math.random() * 10);
+    jumpToQuestion(randomIndex);
+}
+
+// Select random not attempted question
+function selectRandomNotAttempted() {
+    const notAttempted = [];
+    questionAttempts[currentSet].forEach((attempted, index) => {
+        if(!attempted) notAttempted.push(index);
+    });
+    
+    if(notAttempted.length === 0) {
+        alert('All questions have been attempted!');
+        return;
+    }
+    
+    const randomIndex = notAttempted[Math.floor(Math.random() * notAttempted.length)];
+    jumpToQuestion(randomIndex);
+}
+
 // Load question
 function loadQuestion(setIndex){
     const qIndex = questionIndices[setIndex];
@@ -175,17 +317,39 @@ function loadQuestion(setIndex){
     document.getElementById('questionText'+setIndex).innerText = q.question;
     const container = document.getElementById('optionsContainer'+setIndex);
     container.innerHTML = '';
+    
+    // Check if question was already answered
+    const wasAnswered = userAnswers[setIndex][qIndex] !== null;
+    
     q.options.forEach((opt,i)=>{
         const btn = document.createElement('button');
         btn.classList.add('option');
         btn.innerText = opt;
-        btn.onclick = ()=>selectOption(setIndex,i,btn);
+        
+        if(wasAnswered) {
+            btn.disabled = true;
+            if(i === userAnswers[setIndex][qIndex]) {
+                if(i === q.correct) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                }
+            }
+            if(i === q.correct) {
+                btn.classList.add('correct');
+            }
+        } else {
+            btn.onclick = ()=>selectOption(setIndex,i,btn);
+        }
         container.appendChild(btn);
     });
+    
     document.getElementById('prevBtn'+setIndex).style.display = qIndex===0?'none':'inline-block';
     document.getElementById('nextBtn'+setIndex).style.display = qIndex===9?'none':'inline-block';
     document.getElementById('submitBtn'+setIndex).style.display = qIndex===9?'inline-block':'none';
-    document.getElementById('nextBtn'+setIndex).disabled = true;
+    document.getElementById('nextBtn'+setIndex).disabled = !wasAnswered;
+    
+    updateTracker();
 }
 
 // Select option
@@ -194,14 +358,19 @@ function selectOption(setIndex,optIndex,btn){
     const q = quizSets[setIndex][qIndex];
     const container = document.getElementById('optionsContainer'+setIndex);
     Array.from(container.children).forEach(b=>b.disabled=true);
+    
     if(optIndex===q.correct){
         btn.classList.add('correct');
     } else {
         btn.classList.add('wrong');
         container.children[q.correct].classList.add('correct');
     }
+    
     userAnswers[setIndex][qIndex] = optIndex;
+    questionAttempts[setIndex][qIndex] = true;
+    
     if(qIndex<9) document.getElementById('nextBtn'+setIndex).disabled=false;
+    updateTracker();
 }
 
 // Next question
@@ -242,10 +411,12 @@ document.querySelectorAll('.tab').forEach(tab=>{
         document.getElementById('setContent'+setIndex).classList.add('active');
         currentSet = setIndex;
         loadQuestion(setIndex);
+        updateTracker();
     });
 });
 
-// Load first question initially
+// Initialize
+initializeTracker();
 loadQuestion(0);
 </script>
 </body>
